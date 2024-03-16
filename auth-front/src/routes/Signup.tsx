@@ -1,19 +1,22 @@
 import { useState } from "react";
 import DefaultLayout from "../layout/DefaultLayout";
 import { useAuth } from "../auth/AuthProvider";
-import { Navigate } from "react-router-dom";
-import { API_URL } from "../auth/constants";
+import { Navigate,  useNavigate } from "react-router-dom";
+import { AuthResponse, AuthResponseError } from "../types/types";
 
 export default function SignUp() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorResponse, setErrorResponse] = useState("");
+
   const auth = useAuth();
+  const goTo = useNavigate();
 
 async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();
   try{
-    const response = await fetch(`${API_URL}signup`,{
+    const response = await fetch("http://localhost:3000/api/signup",{
       method :"POST",
       headers:{
         "Content-Type": "application/json"
@@ -24,16 +27,23 @@ async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
         password
       }),
     });
-    if(response.ok){
-      console.log("user created successfully");
-    }else{
-      console.log("Something went wrong");
+    if (response.ok) {
+      const json = (await response.json()) as AuthResponse;
+      console.log(json);
+      setUsername("");
+      setPassword("");
+      setName("");
+      goTo("/");
+    } else {
+      const json = (await response.json()) as AuthResponseError;
+
+      setErrorResponse(json.body.error);
     }
-  }catch(error){
+  } catch (error) {
     console.log(error);
   }
 }
-
+  //Determina si esta logeado o no
   if(auth.isAuthenticated){
     return <Navigate to="/dashboard"/>;
   }
@@ -41,6 +51,7 @@ async function handleSubmit(e:React.FormEvent<HTMLFormElement>){
     <DefaultLayout>
       <form className="form" onSubmit={handleSubmit}>
         <h1>Signup</h1>
+        {!!errorResponse && <div className="errorMessage">{errorResponse}</div>}
         <label>Name</label>
         <input
           type="text"

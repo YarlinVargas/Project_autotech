@@ -8,6 +8,8 @@ import Dashboard from './routes/Dashboard.tsx'
 import ProtectedRoute from './routes/ProtectedRoute.tsx'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 
+import './estilos/estilos.css'
+
 const router = createBrowserRouter([
     {
       path:"/",
